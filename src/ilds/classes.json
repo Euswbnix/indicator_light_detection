@@ -1,0 +1,743 @@
+{
+  "classes": [
+    {
+      "kb_id": 1,
+      "name": "DMS警报灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 2,
+      "name": "后方来车报警灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 3,
+      "name": "右后方来车报警灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 4,
+      "name": "左后方来车报警灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 5,
+      "name": "BSD系统故障灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 6,
+      "name": "LDW工作状态指示",
+      "category": "驾驶辅助相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 7,
+      "name": "LDW工作状态指示",
+      "category": "驾驶辅助相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 8,
+      "name": "LDW工作状态指示",
+      "category": "驾驶辅助相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 9,
+      "name": "LDW工作状态指示灯",
+      "category": "驾驶辅助相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 10,
+      "name": "遥控钥匙电量过低指示灯",
+      "category": "车身相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 11,
+      "name": "离合器磨损警报灯",
+      "category": "变速箱相关",
+      "color": "白色"
+    },
+    {
+      "kb_id": 12,
+      "name": "PTO指示灯",
+      "category": "变速箱相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 13,
+      "name": "发动机停机故障警报灯",
+      "category": "发动机相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 14,
+      "name": "EPB维修模式指示灯",
+      "category": "新能源相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 15,
+      "name": "临时停车指示灯",
+      "category": "制动相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 16,
+      "name": "驻车制动系统故障灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 17,
+      "name": "小灯/近光指示灯",
+      "category": "灯光相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 18,
+      "name": "碳载量高指示灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 19,
+      "name": "LNG燃气泄漏警报灯",
+      "category": "发动机相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 20,
+      "name": "动力电池电量低指示灯",
+      "category": "新能源相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 21,
+      "name": "充电线连接 2指示灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 22,
+      "name": "充电线连接 1指示灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 23,
+      "name": "动力电池充电状态指示灯",
+      "category": "新能源相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 24,
+      "name": "动力电池加热状态指示灯",
+      "category": "新能源相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 25,
+      "name": "E/P开关指示灯",
+      "category": "驾驶辅助相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 26,
+      "name": "可变车速限制指示灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 27,
+      "name": "TBOX故障警报灯",
+      "category": "车身相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 28,
+      "name": "EPS系统故障警报灯",
+      "category": "转向",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 29,
+      "name": "电驱桥系统故障警报灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 30,
+      "name": "新能源制动系统故障警报灯",
+      "category": "制动相关",
+      "color": "黑白色"
+    },
+    {
+      "kb_id": 31,
+      "name": "STOP 停车检查警报灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 32,
+      "name": "燃料电池冷却液位过低警报灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 33,
+      "name": "燃料电池冷却液电导率过高警报灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 34,
+      "name": "燃料电池故障警报灯",
+      "category": "新能源相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 35,
+      "name": "变速箱油温过高警报灯",
+      "category": "变速箱相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 36,
+      "name": "EPB系统故障警报灯",
+      "category": "新能源相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 37,
+      "name": "ECAS故障警报灯",
+      "category": "悬架",
+      "color": "红色"
+    },
+    {
+      "kb_id": 38,
+      "name": "动力电机故障警报灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 39,
+      "name": "动力电池故障警报灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 40,
+      "name": "DCDC2故障警报灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 41,
+      "name": "DCDC故障警报灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 42,
+      "name": "多合一控制器故障警报灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 43,
+      "name": "驱动功率限制指示灯",
+      "category": "新能源相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 44,
+      "name": "整车控制器故障警报灯",
+      "category": "新能源相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 45,
+      "name": "NG燃气泄漏警报灯",
+      "category": "发动机相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 46,
+      "name": "主动巡航系统故障警报灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 47,
+      "name": "上装举升指示灯",
+      "category": "车身相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 48,
+      "name": "油中含水指示灯",
+      "category": "发动机相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 49,
+      "name": "燃气剩余量不足指示灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 50,
+      "name": "燃油液位低指示灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 51,
+      "name": "非正常高度下指示灯",
+      "category": "悬架",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 52,
+      "name": "非正常高度上指示灯",
+      "category": "悬架",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 53,
+      "name": "缓速器4档工作指示灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 54,
+      "name": "缓速器3档工作指示灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 55,
+      "name": "缓速器2档工作指示灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 56,
+      "name": "缓速器1档工作指示灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 57,
+      "name": "缓速器恒速档工作指示灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 58,
+      "name": "浮桥举升指示灯",
+      "category": "车桥相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 59,
+      "name": "驱动帮助指示灯",
+      "category": "车桥相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 60,
+      "name": "怠速调整指示灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 61,
+      "name": "LDW系统关闭指示灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 62,
+      "name": "AEBS系统关闭指示灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 63,
+      "name": "FCW系统关闭指示灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 64,
+      "name": "ESC系统关闭指示灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 65,
+      "name": "缓速器高温警报灯",
+      "category": "制动相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 66,
+      "name": "缓速器系统故障灯",
+      "category": "制动相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 67,
+      "name": "ECAS系统故障灯",
+      "category": "悬架",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 68,
+      "name": "EBS故障灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 69,
+      "name": "AEBS系统故障指示灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 70,
+      "name": "LDW系统故障指示灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 71,
+      "name": "FCW系统故障指示灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 72,
+      "name": "坡起辅助指示灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 73,
+      "name": "最高车速警报灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 74,
+      "name": "TPMS/CTIS故障警报灯",
+      "category": "车桥相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 75,
+      "name": "ESC工作指示灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 76,
+      "name": "LDW系统故障指示灯",
+      "category": "驾驶辅助相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 77,
+      "name": "LDW系统警报灯",
+      "category": "驾驶辅助相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 78,
+      "name": "FCW/AEBS系统警报灯",
+      "category": "驾驶辅助相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 79,
+      "name": "FCW/AEBS系统警报指示灯",
+      "category": "驾驶辅助相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 80,
+      "name": "VCU故障警报",
+      "category": "驾驶辅助相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 81,
+      "name": "空滤堵塞警报灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 82,
+      "name": "轴间差速锁指示灯",
+      "category": "车桥相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 83,
+      "name": "轮间差速锁指示灯",
+      "category": "车桥相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 84,
+      "name": "安全带未系警报灯",
+      "category": "车身相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 85,
+      "name": "巡航工作指示灯",
+      "category": "驾驶辅助相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 86,
+      "name": "主副驾车门未关警报灯",
+      "category": "车身相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 87,
+      "name": "副驾车门未关警报灯",
+      "category": "车身相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 88,
+      "name": "主驾车门未关警报灯",
+      "category": "车身相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 89,
+      "name": "EBS系统故障警报灯",
+      "category": "制动相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 90,
+      "name": "变速箱故障警报灯",
+      "category": "变速箱相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 91,
+      "name": "挂车右转向指示灯",
+      "category": "灯光相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 92,
+      "name": "挂车左转向指示灯",
+      "category": "灯光相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 93,
+      "name": "DPF禁止再生开关打开指示灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 94,
+      "name": "DPF再生开关打开指示灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 95,
+      "name": "DPF手动再生请求失败指示灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 96,
+      "name": "驾驶员提醒指示灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 97,
+      "name": "DPF再生指示灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 98,
+      "name": "挂车制动蹄片磨损警报灯",
+      "category": "制动相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 99,
+      "name": "制动蹄片磨损警报灯",
+      "category": "制动相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 100,
+      "name": "ASR警报灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 101,
+      "name": "低速档指示灯",
+      "category": "变速箱相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 102,
+      "name": "尿素液位警报灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 103,
+      "name": "燃油滤清器堵塞警报灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 104,
+      "name": "驾驶室翻转警报灯",
+      "category": "车身相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 105,
+      "name": "灯具故障警报灯",
+      "category": "灯光相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 106,
+      "name": "冷却液液位警报灯",
+      "category": "发动机相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 107,
+      "name": "取力器指示灯",
+      "category": "变速箱相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 108,
+      "name": "发动机故障警报灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 109,
+      "name": "机油压力警报灯",
+      "category": "发动机相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 110,
+      "name": "充电故障指示灯",
+      "category": "车身相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 111,
+      "name": "右转向指示灯",
+      "category": "灯光相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 112,
+      "name": "左转向指示灯",
+      "category": "灯光相关",
+      "color": "绿色"
+    },
+    {
+      "kb_id": 113,
+      "name": "前大灯远光指示灯",
+      "category": "灯光相关",
+      "color": "蓝色"
+    },
+    {
+      "kb_id": 114,
+      "name": "发动机预热指示灯",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 115,
+      "name": "排放故障警报灯（国五）",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 116,
+      "name": "排放故障警报灯（国六）",
+      "category": "发动机相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 117,
+      "name": "ABS挂车警报灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 118,
+      "name": "ABS主车警报灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 119,
+      "name": "冷却液温度警报灯",
+      "category": "发动机相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 120,
+      "name": "驻车制动指示灯",
+      "category": "制动相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 121,
+      "name": "辅助制动指示灯",
+      "category": "制动相关",
+      "color": "黄色"
+    },
+    {
+      "kb_id": 122,
+      "name": "制动系统故障警报灯",
+      "category": "制动相关",
+      "color": "红色"
+    },
+    {
+      "kb_id": 123,
+      "name": "STOP停车检查故障警报灯",
+      "category": "车身相关",
+      "color": "红色"
+    }
+  ],
+  "count": 123
+}

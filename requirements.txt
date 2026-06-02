@@ -1,0 +1,11 @@
+# 运行环境：~/anaconda3/bin/python (Python 3.9)
+# 已具备：torch==2.7.1, ultralytics==8.4.53, opencv-python==4.11, numpy
+# 下列为完整依赖（联网时 pip install -r）：
+torch>=2.0
+torchvision>=0.15
+ultralytics>=8.1
+opencv-python>=4.8
+numpy>=1.24
+pyyaml>=6.0
+tqdm>=4.65
+# 可选：timm（若用预训练 MobileViT 替换自实现）、albumentations（更丰富增强）

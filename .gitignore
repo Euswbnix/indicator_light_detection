@@ -1,0 +1,14 @@
+# 默认忽略一切（数据、图片、权重、产出都不进库）
+/*
+
+# 仅保留代码与文档
+!/.gitignore
+!/README.md
+!/requirements.txt
+!/src/
+
+# Python 缓存（src 内也忽略）
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
