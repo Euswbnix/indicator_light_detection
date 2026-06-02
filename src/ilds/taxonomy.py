@@ -58,6 +58,61 @@ LOOKALIKE_GROUPS = [
 TURN_LEFT, TURN_RIGHT = 112, 111
 TURN_LEFT_TRAILER, TURN_RIGHT_TRAILER = 92, 91
 
+
+# ============================================================
+# 形状/颜色解耦（最终版用，解决“同形不同色”）
+# 思路：分类器出 形状族 + 颜色 两个预测，再查 (形状,颜色)->kb_id。
+#   - 形状族：把同形图标归一族（来自 LOOKALIKE_GROUPS），其余各自成族。
+#   - 颜色：KB 颜色归一到粗桶 red/yellow/green/blue/white。
+#   - 好处：形状头可跨色泛化（连零样本色变体也可能查表识别）；颜色头数据极多很鲁棒；
+#           (形状,颜色)->kb 是知识库查表，可审计；未见组合 -> 转人工。
+# ============================================================
+COLORS = ["red", "yellow", "green", "blue", "white"]
+COLOR_TO_IDX = {c: i for i, c in enumerate(COLORS)}
+
+def norm_color(zh: str) -> str:
+    """KB 中文颜色 -> 粗桶。"""
+    if "红" in zh: return "red"
+    if "黄" in zh or "橙" in zh: return "yellow"
+    if "绿" in zh: return "green"
+    if "蓝" in zh: return "blue"
+    return "white"   # 白色 / 黑白色 / 其它
+
+# kb_id -> 形状族 key
+_FAMILY_OF = {}
+for _g in LOOKALIKE_GROUPS:
+    for _kb in _g["ids"]:
+        _FAMILY_OF[_kb] = _g["name"]
+for _kb in KB_IDS:                       # 未分组的图标：各自成族
+    _FAMILY_OF.setdefault(_kb, f"solo:{_kb}")
+
+SHAPE_FAMILIES = sorted(set(_FAMILY_OF.values()))
+FAMILY_TO_IDX = {f: i for i, f in enumerate(SHAPE_FAMILIES)}
+NUM_SHAPE_FAMILIES = len(SHAPE_FAMILIES)
+NUM_COLORS = len(COLORS)
+
+def shape_family_of(kb_id: int) -> str:
+    return _FAMILY_OF[kb_id]
+
+def color_of(kb_id: int) -> str:
+    return norm_color(KB_BY_ID[kb_id]["color"])
+
+# (形状族 idx, 颜色 idx) -> [kb_id, ...]
+SHAPE_COLOR_TO_KB = {}
+for _kb in KB_IDS:
+    _k = (FAMILY_TO_IDX[shape_family_of(_kb)], COLOR_TO_IDX[color_of(_kb)])
+    SHAPE_COLOR_TO_KB.setdefault(_k, []).append(_kb)
+
+# 仍然冲突的组合（同形同色仍多义，如驻车故障 vs EPB故障）：需更细特征或转人工
+AMBIGUOUS_COMBOS = {k: v for k, v in SHAPE_COLOR_TO_KB.items() if len(v) > 1}
+
+def lookup_kb(family_idx: int, color_idx: int):
+    """返回 (kb_id 或 None, 是否唯一)。None=未见组合→转人工。"""
+    cands = SHAPE_COLOR_TO_KB.get((family_idx, color_idx))
+    if not cands:
+        return None, False
+    return cands[0], len(cands) == 1
+
 if __name__ == "__main__":
     print(f"知识库类: {len(CLASSES)} | 分类器标签空间(含not_a_light): {NUM_CLASSES}")
     print(f"idx 0 = {idx_to_name(0)} | idx 1 = kb{IDX_TO_KB[1]} {idx_to_name(1)}")

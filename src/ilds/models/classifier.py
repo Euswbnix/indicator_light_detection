@@ -125,8 +125,36 @@ class MobileViTXXS(nn.Module):
         return self.fc(x)
 
 
+class MobileViTTwoHead(nn.Module):
+    """最终版：共享骨干 + 形状头 + 颜色头。
+
+    形状头预测形状族，颜色头预测粗颜色；推理时 (形状,颜色) 查表 -> kb_id。
+    解决“同形不同色”：形状/颜色解耦，未见色变体也可能查表识别，未见组合转人工。
+    注：共享骨干 + 单一输入，故增强用 受限色相(±10°)，红/黄/绿相距~120°不会混，
+        既保形状的轻度色鲁棒，又不破坏颜色头。完全色不变需两独立网络（留待 phase2 调优）。
+    """
+    def __init__(self, num_shape, num_color, in_ch=3):
+        super().__init__()
+        base = MobileViTXXS(num_shape, in_ch=in_ch)   # 复用骨干
+        self.backbone = nn.Sequential(
+            base.stem, base.l1, base.l2, base.l3, base.l4, base.l5,
+            base.head_conv, base.pool, nn.Flatten(1), base.dropout)
+        self.shape_head = nn.Linear(320, num_shape)
+        self.color_head = nn.Linear(320, num_color)
+
+    def forward(self, x):
+        f = self.backbone(x)
+        return self.shape_head(f), self.color_head(f)
+
+
 def build_classifier(num_classes):
+    """baseline：单头分类器（直接出 kb 类）。"""
     return MobileViTXXS(num_classes)
+
+
+def build_twohead(num_shape, num_color):
+    """最终版：形状+颜色双头。"""
+    return MobileViTTwoHead(num_shape, num_color)
 
 
 if __name__ == "__main__":
