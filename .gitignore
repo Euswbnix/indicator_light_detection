@@ -6,6 +6,7 @@
 !/README.md
 !/requirements.txt
 !/src/
+!/tests/
 
 # Python 缓存（src 内也忽略）
 __pycache__/
