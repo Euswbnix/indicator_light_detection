@@ -4,11 +4,16 @@
 
 ## 架构：两阶段（检测 + 分类）
 
+![两阶段架构（含 YOLOv8s-P2 与 MobileViT-XXS 内部结构）](images/architecture.png)
+
 ```
 输入图 ──▶ Stage1: YOLOv8s-P2 单类检测 ──▶ 切片合并/DIoU-NMS ──▶ 裁剪 patch
                                                                     │
 最终输出 ◀── 后处理(双闪等) ◀── 拒绝兜底 ◀── Stage2: MobileViT-XXS 分类
 ```
+
+> 架构图源文件：`docs/architecture.tex`（TikZ，可用 Overleaf/pdfLaTeX 编译）；导出的 PNG 在 `images/`。
+> 之后所有图片统一放 `images/` 文件夹。
 
 - **Stage1 — YOLOv8s-P2**（`models/yolov8s-p2.yaml`）：单类“有没有灯”。加 P2(1/4) 头抓
   15–40px 小灯；输入 1280；低 conf 阈值宁多勿漏，误检交 Stage2 兜底。
