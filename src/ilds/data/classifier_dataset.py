@@ -1,10 +1,10 @@
-"""Stage2 分类器数据集：真实裁剪 patch + 类别均衡采样（无合成正样本）。
+"""Stage2 classifier dataset: real crop patches + class-balanced sampling (no synthetic positives).
 
-- 正样本：build_datasets.py 产出的真实裁剪（manifest.csv）。
-- 负样本：negatives/ 目录（难负样本挖掘 + 随机非灯）→ idx 0 = not_a_light。
-- 不在 ClassSpace 里的稀有类样本：丢弃（不进模型，推理时转人工）。
-- 长尾处理：训练时用 WeightedRandomSampler，权重 ∝ (1/count)^alpha（平方根采样），
-  头部不删、稀有超采；负样本按目标占比加权。
+- Positives: real crops produced by build_datasets.py (manifest.csv).
+- Negatives: negatives/ dir (hard-negative mining + random non-lights) -> idx 0 = not_a_light.
+- Samples of rare classes not in the ClassSpace: dropped (not in the model; routed to human at inference).
+- Long-tail handling: training uses a WeightedRandomSampler, weight prop to (1/count)^alpha (sqrt
+  sampling); the head is not deleted, rare classes are oversampled; negatives are weighted to a target fraction.
 """
 import csv
 from pathlib import Path
@@ -36,7 +36,7 @@ class RealCropDataset(Dataset):
         self.cs = class_space
         self.train = train
         self.samples = []          # (path, idx)
-        # 正样本（仅 active 类）
+        # positives (active classes only)
         with open(manifest) as f:
             for row in csv.DictReader(f):
                 if row["split"] != split:
@@ -44,7 +44,7 @@ class RealCropDataset(Dataset):
                 kb = int(row["kb_id"])
                 if self.cs.is_active(kb):
                     self.samples.append((row["path"], self.cs.to_idx(kb)))
-        # 负样本（仅训练/验证各自需要时；按 split 不区分，统一并入）
+        # negatives (split-agnostic; merged in as needed)
         if Path(neg_dir).exists():
             for p in sorted(Path(neg_dir).glob("*.jpg")):
                 self.samples.append((str(p), 0))   # not_a_light
@@ -63,14 +63,14 @@ class RealCropDataset(Dataset):
         x = torch.from_numpy(img[:, :, ::-1].copy()).permute(2, 0, 1).float() / 255.0
         return x, idx
 
-    # ---- 类别均衡采样权重 ----
+    # ---- class-balanced sampling weights ----
     def make_sampler(self):
         labels = np.array([idx for _, idx in self.samples])
         counts = np.bincount(labels, minlength=self.cs.num_classes).astype(float)
         counts[counts == 0] = 1
-        # 平方根采样：权重 ∝ (1/count)^alpha
+        # sqrt sampling: weight prop to (1/count)^alpha
         cls_w = (1.0 / counts) ** SAMPLE_ALPHA
-        # 负样本目标占比：把 idx0 的总权重缩放到 NEG_FRACTION
+        # negative target fraction: scale idx0's total weight to NEG_FRACTION
         cls_w = cls_w / cls_w.sum()
         if counts[0] > 0:
             pos_mass = cls_w[1:].sum()

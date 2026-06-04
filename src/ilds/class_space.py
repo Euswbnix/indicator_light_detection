@@ -1,12 +1,13 @@
-"""数据驱动的分类器标签空间。
+"""Data-driven classifier label space.
 
-无合成数据后，分类器只能识别“有足够真实样本”的类。
-- active_classes.json 记录进模型的 kb_id（训练集样本 >= MIN_SAMPLES）。
-- idx 0 固定 = not_a_light；其余按 kb_id 升序。
-- 不在 active 里的类：检测器仍会框到 → 分类器低置信度/not_a_light → 转人工。
+Without synthetic data, the classifier can only recognize classes that have enough real samples.
+- active_classes.json records the kb_ids in the model (train samples >= MIN_SAMPLES).
+- idx 0 is fixed to not_a_light; the rest are kb_ids ascending.
+- Classes not in `active`: the detector still boxes them -> classifier gives low confidence /
+  not_a_light -> routed to human.
 
-与 taxonomy.py 的区别：taxonomy 是全量 123 类字典（不变）；
-class_space 是“这一版模型实际支持的类”，随数据增长而扩大。
+Difference from taxonomy.py: taxonomy is the full 123-class dictionary (fixed);
+class_space is "the classes this model version actually supports", which grows with the data.
 """
 import json
 from .config import ACTIVE_CLASSES, NOT_A_LIGHT
@@ -43,5 +44,5 @@ class ClassSpace:
 
     @classmethod
     def from_counts(cls, counts: dict, min_samples: int):
-        """counts: {kb_id: 训练集样本数} -> 取 >= min_samples 的类。"""
+        """counts: {kb_id: train sample count} -> keep classes with >= min_samples."""
         return cls([kb for kb, c in counts.items() if c >= min_samples])

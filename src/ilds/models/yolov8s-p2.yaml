@@ -1,8 +1,8 @@
-# YOLOv8s-P2 单类检测器（indicator_light）
-# 在标准 YOLOv8 基础上增加 P2(1/4) 检测头，专攻小目标（仪表盘小灯 15-40px）。
-# 检测头：P2/P3/P4/P5 四个尺度，覆盖从密集小灯到中央大图标的尺度跨度。
-nc: 1                 # 单类：有没有灯
-scales:               # 's' 规模
+# YOLOv8s-P2 single-class detector (indicator_light)
+# Adds a P2(1/4) detection head to stock YOLOv8 for small objects (15-40px dashboard lights).
+# Heads: P2/P3/P4/P5 four scales, covering dense small lights up to the large central icon.
+nc: 1                 # single class: light present or not
+scales:               # 's' size
   s: [0.33, 0.50, 1024]
 
 backbone:
@@ -29,7 +29,7 @@ head:
 
   - [-1, 1, nn.Upsample, [None, 2, "nearest"]]   # 16
   - [[-1, 2], 1, Concat, [1]]                     # 17 cat P2
-  - [-1, 3, C2f, [128]]                           # 18 (P2/4) <-- 小目标头
+  - [-1, 3, C2f, [128]]                           # 18 (P2/4) <-- small-object head
 
   - [-1, 1, Conv, [128, 3, 2]]                    # 19
   - [[-1, 15], 1, Concat, [1]]                    # 20

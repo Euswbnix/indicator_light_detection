@@ -1,10 +1,11 @@
-"""难负样本挖掘：检测器自己的误检 → not_a_light 训练材料。
+"""Hard-negative mining: the detector's own false positives -> not_a_light training material.
 
-闭环：训好检测器 → 在标注图上低阈值跑 → 检出框与真实 bbox 做 IoU 比对 →
-IoU≈0 的框就是误检（时钟/温度/反光/驾驶员小人...）→ 裁出来存为 not_a_light。
-喂回分类器重训，越迭代拒绝能力越强。零人工标注。
+Loop: train the detector -> run it at a low threshold on annotated images -> IoU-compare each
+detection with the ground-truth bboxes -> boxes with IoU ~ 0 are false positives (clock / temperature /
+glare / driver-present icon ...) -> crop them and save as not_a_light. Feed back to retrain the
+classifier; rejection ability improves with each iteration. Zero manual labeling.
 
-用法： ~/anaconda3/bin/python -m src.ilds.train.mine_hard_negatives \
+Usage: python -m src.ilds.train.mine_hard_negatives \
           --weights runs/detector_p2/weights/best.pt --out datasets/classifier/negatives
 """
 import argparse
@@ -28,7 +29,7 @@ def iou_xyxy(a, boxes):
 
 
 def load_gt(label_path, W, H):
-    """读 YOLO label（cls cx cy w h 归一化）→ xyxy 像素。"""
+    """Read a YOLO label (cls cx cy w h normalized) -> xyxy pixels."""
     if not label_path.exists():
         return np.zeros((0, 4))
     out = []
@@ -47,7 +48,7 @@ def main():
     ap.add_argument("--images", default=str(config.DET_DS / "images" / "train"))
     ap.add_argument("--labels", default=str(config.DET_DS / "labels" / "train"))
     ap.add_argument("--out", default=str(config.CLS_DS / "negatives"))
-    ap.add_argument("--iou", type=float, default=0.1, help="低于此 IoU 视为误检")
+    ap.add_argument("--iou", type=float, default=0.1, help="below this IoU = false positive")
     args = ap.parse_args()
 
     out = Path(args.out); out.mkdir(parents=True, exist_ok=True)
@@ -61,12 +62,12 @@ def main():
         if r.boxes is None:
             continue
         for box in r.boxes.xyxy.cpu().numpy():
-            if len(gt) == 0 or iou_xyxy(box, gt).max() < args.iou:   # 不命中任何真灯 = 误检
+            if len(gt) == 0 or iou_xyxy(box, gt).max() < args.iou:   # hits no real light = false positive
                 x0, y0, x1, y1 = [int(v) for v in box]
                 crop = img[max(0, y0):y1, max(0, x0):x1]
                 if crop.size:
                     cv2.imwrite(str(out / f"hn_{ip.stem}_{n}.jpg"), crop); n += 1
-    print(f"挖出 {n} 个难负样本 → {out}")
+    print(f"mined {n} hard negatives -> {out}")
 
 
 if __name__ == "__main__":

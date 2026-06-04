@@ -1,10 +1,11 @@
-"""Stage2 分类器：MobileViT-XXS（自包含实现，仅依赖 torch）。
+"""Stage2 classifier: MobileViT-XXS (self-contained, depends only on torch).
 
-为什么自己实现：环境无 timm 且无法联网安装。MobileViT 体量小，从头实现可控。
-CNN(局部纹理：图标形状) + Transformer(全局特征：颜色分布) 混合，正好契合
-“同形不同色”需要全局颜色信息的需求。
+Why self-implemented: the environment has no timm and no internet to install it. MobileViT is
+small, so a from-scratch implementation is manageable. A CNN (local texture: icon shape) +
+Transformer (global features: color distribution) hybrid fits the need for global color info to
+solve "same shape, different color".
 
-输入 128x128x3，输出 NUM_CLASSES（含 not_a_light）。
+Input 128x128x3, output NUM_CLASSES (incl. not_a_light).
 """
 import torch
 import torch.nn as nn
@@ -21,7 +22,7 @@ def conv_bn_silu(inp, oup, k=3, s=1, g=1):
 
 
 class InvertedResidual(nn.Module):
-    """MobileNetV2 MBConv。"""
+    """MobileNetV2 MBConv."""
     def __init__(self, inp, oup, stride, expand):
         super().__init__()
         self.use_res = stride == 1 and inp == oup
@@ -41,7 +42,7 @@ class InvertedResidual(nn.Module):
 
 
 class MobileViTBlock(nn.Module):
-    """局部表示(conv) -> 展开成 patch -> Transformer 全局建模 -> 折回 -> 融合。"""
+    """Local representation (conv) -> unfold into patches -> Transformer (global) -> fold back -> fuse."""
     def __init__(self, dim, depth, channel, kernel=3, patch=2, mlp_ratio=2.0, heads=4):
         super().__init__()
         self.ph = self.pw = patch
@@ -62,7 +63,7 @@ class MobileViTBlock(nn.Module):
         x = self.local_rep(x)
         B, d, H, W = x.shape
         ph, pw = self.ph, self.pw
-        # pad 到 patch 整数倍
+        # pad to a multiple of the patch size
         pad_h = (ph - H % ph) % ph
         pad_w = (pw - W % pw) % pw
         if pad_h or pad_w:
@@ -82,12 +83,12 @@ class MobileViTBlock(nn.Module):
 
 
 class MobileViTXXS(nn.Module):
-    """MobileViT-XXS，约 1.3M 参数。"""
+    """MobileViT-XXS, ~1.3M params."""
     def __init__(self, num_classes, in_ch=3):
         super().__init__()
-        # XXS 通道配置
+        # XXS channel config
         c = [16, 16, 24, 48, 64, 80]
-        d = [64, 80, 96]            # transformer 维度
+        d = [64, 80, 96]            # transformer dims
         self.stem = conv_bn_silu(in_ch, c[0], k=3, s=2)               # 1/2
         self.l1 = InvertedResidual(c[0], c[1], 1, 2)
         self.l2 = nn.Sequential(                                      # 1/4
@@ -126,16 +127,18 @@ class MobileViTXXS(nn.Module):
 
 
 class MobileViTTwoHead(nn.Module):
-    """最终版：共享骨干 + 形状头 + 颜色头。
+    """Final version: shared backbone + shape head + color head.
 
-    形状头预测形状族，颜色头预测粗颜色；推理时 (形状,颜色) 查表 -> kb_id。
-    解决“同形不同色”：形状/颜色解耦，未见色变体也可能查表识别，未见组合转人工。
-    注：共享骨干 + 单一输入，故增强用 受限色相(±10°)，红/黄/绿相距~120°不会混，
-        既保形状的轻度色鲁棒，又不破坏颜色头。完全色不变需两独立网络（留待 phase2 调优）。
+    The shape head predicts the shape-family, the color head predicts the coarse color; at inference
+    (shape, color) is looked up -> kb_id. Solves "same shape, different color": shape/color decoupled,
+    unseen color variants may still be recovered by lookup, unseen combos -> route to human.
+    Note: shared backbone + single input, so augmentation uses bounded hue (+/-10 deg); red/yellow/green
+    are ~120 deg apart so they won't be confused, giving the shape mild color-robustness without breaking
+    the color head. Full color-invariance would need two separate networks (left for phase-2 tuning).
     """
     def __init__(self, num_shape, num_color, in_ch=3):
         super().__init__()
-        base = MobileViTXXS(num_shape, in_ch=in_ch)   # 复用骨干
+        base = MobileViTXXS(num_shape, in_ch=in_ch)   # reuse backbone
         self.backbone = nn.Sequential(
             base.stem, base.l1, base.l2, base.l3, base.l4, base.l5,
             base.head_conv, base.pool, nn.Flatten(1), base.dropout)
@@ -148,12 +151,12 @@ class MobileViTTwoHead(nn.Module):
 
 
 def build_classifier(num_classes):
-    """baseline：单头分类器（直接出 kb 类）。"""
+    """Baseline: single-head classifier (predicts kb classes directly)."""
     return MobileViTXXS(num_classes)
 
 
 def build_twohead(num_shape, num_color):
-    """最终版：形状+颜色双头。"""
+    """Final version: shape + color two heads."""
     return MobileViTTwoHead(num_shape, num_color)
 
 
@@ -163,4 +166,4 @@ if __name__ == "__main__":
     n = sum(p.numel() for p in m.parameters())
     x = torch.randn(2, 3, 128, 128)
     y = m(x)
-    print(f"MobileViT-XXS 参数量: {n/1e6:.2f}M | 输出: {tuple(y.shape)} (NUM_CLASSES={NUM_CLASSES})")
+    print(f"MobileViT-XXS params: {n/1e6:.2f}M | output: {tuple(y.shape)} (NUM_CLASSES={NUM_CLASSES})")

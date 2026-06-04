@@ -1,13 +1,15 @@
-"""类别体系。
+"""Class taxonomy.
 
-- 检测器(Stage1)：单类 'indicator_light'（只找灯，不分类）。
-- 分类器(Stage2)：123 个知识库类 + not_a_light = 124 类。
+- Detector (Stage1): single class 'indicator_light' (only finds lights, no classification).
+- Classifier (Stage2): 123 knowledge-base classes + not_a_light = 124 classes.
 
-设计要点：
-- 颜色是语义的一部分（同形不同色 = 不同类，如 P 灯红/黄/绿），知识库已用不同 kb_id
-  区分，因此这里直接用 kb_id 作为类，不做颜色合并。
-- 提供 视觉近似组(merge groups) 仅作参考/评估用，默认不合并，避免信息丢失。
-- index <-> kb_id 双向映射，index 0 固定为 not_a_light。
+Design notes:
+- Color is part of the semantics (same shape, different color = different class, e.g. the
+  P-light red/yellow/green). The knowledge base already separates these with distinct kb_ids,
+  so we use kb_id directly as the class and do NOT merge by color.
+- Lookalike (merge) groups are provided for reporting/analysis only; not merged by default,
+  to avoid losing information.
+- index <-> kb_id bidirectional mapping; index 0 is fixed to not_a_light.
 """
 import json
 from .config import CLASSES_JSON, NOT_A_LIGHT
@@ -16,11 +18,11 @@ with open(CLASSES_JSON, encoding="utf-8") as f:
     _data = json.load(f)
 
 CLASSES = _data["classes"]                              # [{kb_id,name,category,color}, ...]
-KB_IDS = [c["kb_id"] for c in CLASSES]                   # 升序的 123 个 kb_id
+KB_IDS = [c["kb_id"] for c in CLASSES]                   # the 123 kb_ids, ascending
 KB_BY_ID = {c["kb_id"]: c for c in CLASSES}
 
-# ---- 分类器标签空间：index 0 = not_a_light，之后按 kb_id 升序 ----
-IDX_TO_KB = [None] + KB_IDS                              # idx 0 -> None(背景)
+# ---- Classifier label space: index 0 = not_a_light, then kb_ids ascending ----
+IDX_TO_KB = [None] + KB_IDS                              # idx 0 -> None (background)
 KB_TO_IDX = {kb: i for i, kb in enumerate(IDX_TO_KB) if kb is not None}
 NUM_CLASSES = len(IDX_TO_KB)                             # 124
 
@@ -35,55 +37,56 @@ def idx_to_color(idx: int) -> str:
 def kb_to_idx(kb_id: int) -> int:
     return KB_TO_IDX[kb_id]
 
-# ---- 视觉近似组（同形态，靠颜色/细节区分）。仅用于报告与混淆分析。----
-# 每组列出 kb_id；标注遇到组内难分辨时应 flag 待专家确认，不可瞎猜。
+# ---- Lookalike groups (same shape, told apart by color/detail). For reporting & confusion analysis only. ----
+# Each group lists kb_ids; when annotators cannot tell members apart they should flag for expert review, not guess.
 LOOKALIKE_GROUPS = [
-    {"name": "P灯(驻车/临停/EPB)", "ids": [15, 16, 36, 120], "note": "圆圈P，绿/黄/橙/红四色四义"},
-    {"name": "EBS",              "ids": [68, 89],          "note": "圆圈EBS，黄=一般红=严重"},
-    {"name": "ECAS",             "ids": [37, 67],          "note": "圆圈ECAS，黄/红"},
-    {"name": "制动(!)",          "ids": [121, 122],        "note": "圆圈感叹号，黄=辅助制动红=系统故障"},
-    {"name": "排放故障(国五/六)",  "ids": [115, 116],       "note": "形近，可按车型合并"},
-    {"name": "LDW工作态",        "ids": [6, 7, 8, 9],      "note": "车道线4种，可合并为1类"},
-    {"name": "缓速器档位",        "ids": [53, 54, 55, 56, 57], "note": "档位数字不同"},
-    {"name": "充电线连接",        "ids": [21, 22],          "note": "1/2，形近"},
-    {"name": "转向(主车)",        "ids": [111, 112],        "note": "左右"},
-    {"name": "转向(挂车)",        "ids": [91, 92],          "note": "左右"},
-    {"name": "车门未关",          "ids": [86, 87, 88],      "note": "主/副/主副"},
-    {"name": "非正常高度",        "ids": [51, 52],          "note": "上/下"},
-    {"name": "DCDC",             "ids": [40, 41],          "note": "DCDC/DCDC2"},
-    {"name": "燃气泄漏(LNG/NG)",  "ids": [19, 45],          "note": "形近"},
+    {"name": "P-light(park/autohold/EPB)", "ids": [15, 16, 36, 120], "note": "circle-P, green/yellow/orange/red = 4 meanings"},
+    {"name": "EBS",                "ids": [68, 89],          "note": "circle-EBS, yellow=minor red=severe"},
+    {"name": "ECAS",               "ids": [37, 67],          "note": "circle-ECAS, yellow/red"},
+    {"name": "brake(!)",           "ids": [121, 122],        "note": "circle-exclamation, yellow=aux brake red=system fault"},
+    {"name": "emission(GB5/GB6)",  "ids": [115, 116],        "note": "near-identical, may merge by model"},
+    {"name": "LDW-working",        "ids": [6, 7, 8, 9],      "note": "4 lane states, mergeable into 1"},
+    {"name": "retarder-gear",      "ids": [53, 54, 55, 56, 57], "note": "different gear digits"},
+    {"name": "charge-cable",       "ids": [21, 22],          "note": "1/2, near-identical"},
+    {"name": "turn(tractor)",      "ids": [111, 112],        "note": "left/right"},
+    {"name": "turn(trailer)",      "ids": [91, 92],          "note": "left/right"},
+    {"name": "door-ajar",          "ids": [86, 87, 88],      "note": "main/passenger/both"},
+    {"name": "abnormal-height",    "ids": [51, 52],          "note": "up/down"},
+    {"name": "DCDC",               "ids": [40, 41],          "note": "DCDC/DCDC2"},
+    {"name": "gas-leak(LNG/NG)",   "ids": [19, 45],          "note": "near-identical"},
 ]
 
-# 业务后处理用：左右转向同亮 = 双闪
+# Business post-processing: left + right turn signals on together = hazard lights
 TURN_LEFT, TURN_RIGHT = 112, 111
 TURN_LEFT_TRAILER, TURN_RIGHT_TRAILER = 92, 91
 
 
 # ============================================================
-# 形状/颜色解耦（最终版用，解决“同形不同色”）
-# 思路：分类器出 形状族 + 颜色 两个预测，再查 (形状,颜色)->kb_id。
-#   - 形状族：把同形图标归一族（来自 LOOKALIKE_GROUPS），其余各自成族。
-#   - 颜色：KB 颜色归一到粗桶 red/yellow/green/blue/white。
-#   - 好处：形状头可跨色泛化（连零样本色变体也可能查表识别）；颜色头数据极多很鲁棒；
-#           (形状,颜色)->kb 是知识库查表，可审计；未见组合 -> 转人工。
+# Shape/color decoupling (final version; solves "same shape, different color")
+# Idea: the classifier predicts shape-family + color, then we look up (shape, color) -> kb_id.
+#   - shape-family: same-shape icons share a family (from LOOKALIKE_GROUPS); others are singletons.
+#   - color: KB color normalized into coarse buckets red/yellow/green/blue/white.
+#   - benefits: the shape head generalizes across colors (even zero-shot color variants may be
+#     recovered by lookup); the color head has plenty of data and is robust;
+#     (shape,color)->kb is an auditable KB lookup; unseen combos -> route to human.
 # ============================================================
 COLORS = ["red", "yellow", "green", "blue", "white"]
 COLOR_TO_IDX = {c: i for i, c in enumerate(COLORS)}
 
 def norm_color(zh: str) -> str:
-    """KB 中文颜色 -> 粗桶。"""
+    """KB Chinese color string -> coarse bucket."""
     if "红" in zh: return "red"
     if "黄" in zh or "橙" in zh: return "yellow"
     if "绿" in zh: return "green"
     if "蓝" in zh: return "blue"
-    return "white"   # 白色 / 黑白色 / 其它
+    return "white"   # white / black-white / other
 
-# kb_id -> 形状族 key
+# kb_id -> shape-family key
 _FAMILY_OF = {}
 for _g in LOOKALIKE_GROUPS:
     for _kb in _g["ids"]:
         _FAMILY_OF[_kb] = _g["name"]
-for _kb in KB_IDS:                       # 未分组的图标：各自成族
+for _kb in KB_IDS:                       # ungrouped icons: each its own family
     _FAMILY_OF.setdefault(_kb, f"solo:{_kb}")
 
 SHAPE_FAMILIES = sorted(set(_FAMILY_OF.values()))
@@ -97,23 +100,24 @@ def shape_family_of(kb_id: int) -> str:
 def color_of(kb_id: int) -> str:
     return norm_color(KB_BY_ID[kb_id]["color"])
 
-# (形状族 idx, 颜色 idx) -> [kb_id, ...]
+# (shape-family idx, color idx) -> [kb_id, ...]
 SHAPE_COLOR_TO_KB = {}
 for _kb in KB_IDS:
     _k = (FAMILY_TO_IDX[shape_family_of(_kb)], COLOR_TO_IDX[color_of(_kb)])
     SHAPE_COLOR_TO_KB.setdefault(_k, []).append(_kb)
 
-# 仍然冲突的组合（同形同色仍多义，如驻车故障 vs EPB故障）：需更细特征或转人工
+# Combos still ambiguous (same shape AND same color but multiple meanings, e.g. park-fault vs EPB-fault):
+# need finer features or route to human.
 AMBIGUOUS_COMBOS = {k: v for k, v in SHAPE_COLOR_TO_KB.items() if len(v) > 1}
 
 def lookup_kb(family_idx: int, color_idx: int):
-    """返回 (kb_id 或 None, 是否唯一)。None=未见组合→转人工。"""
+    """Return (kb_id or None, is_unique). None = unseen combo -> route to human."""
     cands = SHAPE_COLOR_TO_KB.get((family_idx, color_idx))
     if not cands:
         return None, False
     return cands[0], len(cands) == 1
 
 if __name__ == "__main__":
-    print(f"知识库类: {len(CLASSES)} | 分类器标签空间(含not_a_light): {NUM_CLASSES}")
+    print(f"KB classes: {len(CLASSES)} | classifier label space (incl. not_a_light): {NUM_CLASSES}")
     print(f"idx 0 = {idx_to_name(0)} | idx 1 = kb{IDX_TO_KB[1]} {idx_to_name(1)}")
-    print(f"近似组: {len(LOOKALIKE_GROUPS)} 组")
+    print(f"lookalike groups: {len(LOOKALIKE_GROUPS)}")

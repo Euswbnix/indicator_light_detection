@@ -1,11 +1,11 @@
-"""训练 Stage2 MobileViT-XXS 分类器（真实裁剪 + 类别均衡采样）。
+"""Train the Stage2 MobileViT-XXS classifier (real crops + class-balanced sampling).
 
-前置：先跑 build_datasets.py 生成 crops/ + manifest.csv + active_classes.json。
-用法： ~/anaconda3/bin/python -m src.ilds.train.train_classifier --epochs 50 --focal
+Prerequisite: run build_datasets.py first to produce crops/ + manifest.csv + active_classes.json.
+Usage: python -m src.ilds.train.train_classifier --epochs 50 --focal
 
-长尾已在数据层被删的头部保留、训练层用均衡采样+Focal压制：
-- WeightedRandomSampler（平方根采样，头部不删、稀有超采）
-- FocalLoss（难样本/稀有类权重更高）
+The long tail (head kept, not deleted) is suppressed at the training layer via balanced sampling + Focal:
+- WeightedRandomSampler (sqrt sampling; head kept, rare classes oversampled)
+- FocalLoss (higher weight on hard / rare-class samples)
 """
 import argparse
 import numpy as np
@@ -46,12 +46,12 @@ def main():
 
     config.WEIGHTS.mkdir(exist_ok=True)
     cs = ClassSpace.load()
-    print(f"分类器支持 {cs.num_classes-1} 个灯类 + not_a_light")
+    print(f"classifier supports {cs.num_classes-1} light classes + not_a_light")
 
     train_ds = RealCropDataset(cs, split="train", train=True)
     val_ds = RealCropDataset(cs, split="val", train=False)
-    print(f"训练 {len(train_ds)} patch | 验证 {len(val_ds)} patch")
-    print("各类训练样本数:", train_ds.class_counts().tolist())
+    print(f"train {len(train_ds)} patches | val {len(val_ds)} patches")
+    print("per-class train counts:", train_ds.class_counts().tolist())
 
     sampler = train_ds.make_sampler()
     train_dl = DataLoader(train_ds, batch_size=args.bs, sampler=sampler, num_workers=4, drop_last=True)
@@ -61,7 +61,7 @@ def main():
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.epochs)
 
-    # 类别权重（逆频，给 Focal 用）
+    # class weights (inverse frequency, used by Focal)
     counts = train_ds.class_counts().astype(float)
     counts[counts == 0] = 1
     cw = torch.tensor((counts.sum() / counts) ** 0.5, dtype=torch.float32, device=args.device)
@@ -81,7 +81,7 @@ def main():
             run += loss.item()
         sched.step()
 
-        # 验证：整体 + 宏平均（长尾下宏平均更诚实）
+        # validation: micro + macro accuracy (macro is more honest under a long tail)
         model.eval()
         K = cs.num_classes
         per_correct = np.zeros(K); per_total = np.zeros(K)
@@ -101,7 +101,7 @@ def main():
             torch.save({"model": model.state_dict(), "kb_ids": cs.kb_ids},
                        config.WEIGHTS / "classifier_best.pt")
             print(f"   saved best (macro {macro:.4f})")
-    print(f"完成，最佳 macro_acc {best:.4f}")
+    print(f"done, best macro_acc {best:.4f}")
 
 
 if __name__ == "__main__":

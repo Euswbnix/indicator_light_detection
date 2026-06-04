@@ -1,11 +1,16 @@
-"""合成分类训练样本 —— 用知识库 123 个图标 PNG 生成灯 patch。
+"""Synthetic classifier samples -- render light patches from the 123 knowledge-base icon PNGs.
 
-两阶段架构最大红利：分类器看到的是裁剪出的小 patch，与图标 PNG 同域，
-加个背景 + 辉光就是训练样本，无需把图标贴回仪表盘。一次性覆盖 82 个零样本类。
+NOTE: synthetic POSITIVES are no longer used for training (the project decided that zero-sample
+classes are too rare and should be routed to human instead). `render_patch` is kept for reference/
+visualization only. `make_negative` is still useful for generating not_a_light negatives.
 
-两条渲染轨（同一图标同一类，质感不同，缺一不可）：
-  - LCD 屏渲染：抗锯齿、平滑、可能带渐变（中央大图标）
-  - LED 灯板渲染：像素化、背光硬边、辉光（顶部灯板小灯）
+Original rationale (kept for context): the biggest win of the two-stage design is that the
+classifier sees cropped small patches, which are in the same domain as the icon PNGs -- add a
+background + glow and you have a training sample, without pasting icons back onto a dashboard.
+
+Two render tracks (same icon, same class, different texture):
+  - LCD-screen render: anti-aliased, smooth, possibly gradient (central large icon)
+  - LED-panel render: pixelated, hard backlit edges, glow (top-panel small lights)
 """
 import random
 from pathlib import Path
@@ -16,7 +21,7 @@ from ..config import KB_DIR, CLS_IMGSZ
 
 
 def _load_icon(png_path):
-    """读 PNG，返回 RGBA。"""
+    """Read a PNG, return RGBA."""
     img = cv2.imread(str(png_path), cv2.IMREAD_UNCHANGED)
     if img is None:
         return None
@@ -28,7 +33,7 @@ def _load_icon(png_path):
 
 
 def _alpha_mask(rgba):
-    """得到图标前景 mask（透明通道或非白）。"""
+    """Foreground mask of the icon (from alpha channel, or non-white)."""
     a = rgba[..., 3]
     if a.min() < 250:
         return a > 30
@@ -37,7 +42,7 @@ def _alpha_mask(rgba):
 
 
 def _add_glow(bgr, mask, color, strength=0.6):
-    """对前景加辉光，模拟自发光。"""
+    """Add glow to the foreground to simulate self-emission."""
     glow = np.zeros_like(bgr, np.float32)
     glow[mask] = color
     glow = cv2.GaussianBlur(glow, (0, 0), sigmaX=max(2, bgr.shape[0] // 20))
@@ -46,19 +51,18 @@ def _add_glow(bgr, mask, color, strength=0.6):
 
 
 def render_patch(png_path, style="led", size=CLS_IMGSZ):
-    """把一个图标渲染成一张灯 patch（uint8 BGR）。"""
+    """Render one icon into a light patch (uint8 BGR). Deprecated for training; viz only."""
     rgba = _load_icon(png_path)
     if rgba is None:
         return None
     mask = _alpha_mask(rgba)
-    fg = rgba[..., :3].astype(np.float32)
 
-    # 暗背景（仪表盘底色：近黑，略带噪点）
+    # dark background (dashboard base color: near-black, slight noise)
     bg_val = random.randint(5, 35)
     canvas = np.full((size, size, 3), bg_val, np.uint8)
     canvas = canvas + np.random.randint(0, 12, canvas.shape, np.uint8)
 
-    # 缩放图标到 patch 的 50%-85%
+    # scale icon to 50%-85% of the patch
     scale = random.uniform(0.5, 0.85)
     side = int(size * scale)
     icon = cv2.resize(rgba, (side, side), interpolation=cv2.INTER_AREA)
@@ -66,19 +70,19 @@ def render_patch(png_path, style="led", size=CLS_IMGSZ):
     ic = icon[..., :3]
 
     if style == "lcd":
-        ic = cv2.GaussianBlur(ic, (3, 3), 0)            # 平滑抗锯齿
+        ic = cv2.GaussianBlur(ic, (3, 3), 0)            # smooth / anti-alias
     elif style == "led":
-        # 像素化 + 硬边
+        # pixelate + hard edges
         small = cv2.resize(ic, (side // 3, side // 3), interpolation=cv2.INTER_NEAREST)
         ic = cv2.resize(small, (side, side), interpolation=cv2.INTER_NEAREST)
 
-    # 随机位置贴上
+    # paste at a random position
     oy = random.randint(0, size - side); ox = random.randint(0, size - side)
     roi = canvas[oy:oy + side, ox:ox + side]
     roi[m] = ic[m]
     canvas[oy:oy + side, ox:ox + side] = roi
 
-    # 辉光（取图标主色）
+    # glow (use the icon's dominant color)
     if m.any():
         color = ic[m].mean(axis=0)
         full_mask = np.zeros((size, size), bool)
@@ -88,7 +92,7 @@ def render_patch(png_path, style="led", size=CLS_IMGSZ):
 
 
 def iter_icons():
-    """遍历知识库图标，返回 (kb_id, png_path)。"""
+    """Iterate knowledge-base icons, yield (kb_id, png_path)."""
     for p in sorted(Path(KB_DIR).glob("*.png")):
         head = p.name.split("-")[0]
         if head.isdigit():
@@ -96,7 +100,7 @@ def iter_icons():
 
 
 def make_negative(size=CLS_IMGSZ):
-    """合成易负样本（背景/反光/文字条），用于 not_a_light。"""
+    """Synthesize an easy negative (background/glare/text bar) for not_a_light."""
     kind = random.choice(["dark", "glare", "text", "noise"])
     img = np.full((size, size, 3), random.randint(5, 40), np.uint8)
     if kind == "glare":
@@ -125,4 +129,4 @@ if __name__ == "__main__":
             break
     for i in range(6):
         cv2.imwrite(str(out / f"neg_{i}.jpg"), make_negative())
-    print(f"预览样本写入 {out}（{n} 张灯 + 6 张负样本）")
+    print(f"preview samples written to {out} ({n} lights + 6 negatives)")
