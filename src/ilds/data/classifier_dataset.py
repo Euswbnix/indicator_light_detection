@@ -13,7 +13,7 @@ import torch
 from torch.utils.data import Dataset, WeightedRandomSampler
 import cv2
 
-from ..config import CLS_IMGSZ, MANIFEST, NEG_DIR, SAMPLE_ALPHA, NEG_FRACTION
+from ..config import CLS_IMGSZ, MANIFEST, NEG_DIR, SAMPLE_ALPHA, NEG_FRACTION, VAL_RATIO
 from .augment import augment_patch
 
 
@@ -44,10 +44,14 @@ class RealCropDataset(Dataset):
                 kb = int(row["kb_id"])
                 if self.cs.is_active(kb):
                     self.samples.append((row["path"], self.cs.to_idx(kb)))
-        # negatives (split-agnostic; merged in as needed)
+        # negatives (not_a_light) -> split into train/val too, so val is not leaked
         if Path(neg_dir).exists():
-            for p in sorted(Path(neg_dir).glob("*.jpg")):
-                self.samples.append((str(p), 0))   # not_a_light
+            negs = sorted(Path(neg_dir).glob("*.jpg"))
+            n_val = int(len(negs) * VAL_RATIO)
+            val_negs = set(negs[:n_val])           # first VAL_RATIO -> val, rest -> train
+            for p in negs:
+                if (p in val_negs) == (split == "val"):
+                    self.samples.append((str(p), 0))
 
     def __len__(self):
         return len(self.samples)
