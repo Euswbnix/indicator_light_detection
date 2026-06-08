@@ -9,3 +9,8 @@ numpy>=1.24
 pyyaml>=6.0
 tqdm>=4.65
 # 可选：timm（若用预训练 MobileViT 替换自实现）、albumentations（更丰富增强）
+
+# 推理服务(可选)
+fastapi>=0.110
+uvicorn>=0.27
+python-multipart>=0.0.9
