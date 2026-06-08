@@ -12,6 +12,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from tqdm import tqdm
+
+# optional SwanLab experiment tracking (enabled with --swanlab; no-op if not installed)
+try:
+    import swanlab
+except ImportError:
+    swanlab = None
 
 from .. import config
 from ..class_space import ClassSpace
@@ -41,8 +48,18 @@ def main():
     ap.add_argument("--bs", type=int, default=64)
     ap.add_argument("--lr", type=float, default=3e-4)
     ap.add_argument("--focal", action="store_true")
+    ap.add_argument("--swanlab", action="store_true", help="log to SwanLab (pip install swanlab)")
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     args = ap.parse_args()
+
+    sw_run = None
+    if args.swanlab:
+        if swanlab is None:
+            print("swanlab not installed; run `pip install swanlab`. Continuing without it.")
+        else:
+            sw_run = swanlab.init(project="indicator-light-classifier",
+                                  config={"epochs": args.epochs, "bs": args.bs, "lr": args.lr,
+                                          "focal": args.focal})
 
     config.WEIGHTS.mkdir(exist_ok=True)
     cs = ClassSpace.load()
@@ -72,13 +89,15 @@ def main():
     for ep in range(args.epochs):
         model.train()
         run = 0.0
-        for x, y in train_dl:
+        pbar = tqdm(train_dl, desc=f"epoch {ep}/{args.epochs-1}", ncols=100)
+        for x, y in pbar:
             x, y = x.to(args.device), y.to(args.device)
             opt.zero_grad()
             loss = crit(model(x), y)
             loss.backward()
             opt.step()
             run += loss.item()
+            pbar.set_postfix(loss=f"{loss.item():.3f}", lr=f"{sched.get_last_lr()[0]:.1e}")
         sched.step()
 
         # validation: micro + macro accuracy (macro is more honest under a long tail)
@@ -96,6 +115,9 @@ def main():
         micro = per_correct.sum() / max(1, per_total.sum())
         macro = (per_correct[seen] / per_total[seen]).mean()
         print(f"== ep{ep}: loss {run/len(train_dl):.3f}  micro_acc {micro:.4f}  macro_acc {macro:.4f}")
+        if sw_run is not None:
+            swanlab.log({"train/loss": run / len(train_dl), "val/micro_acc": micro,
+                         "val/macro_acc": macro, "lr": sched.get_last_lr()[0]}, step=ep)
         if macro > best:
             best = macro
             torch.save({"model": model.state_dict(), "kb_ids": cs.kb_ids},
